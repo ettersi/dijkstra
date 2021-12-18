@@ -20,7 +20,7 @@ impl<W: IntOrFloat> DijkstraHeap<W> {
     pub fn new(n: usize) -> DijkstraHeap<W> {
         let h2v = Vec::with_capacity(n);
         let v2h = vec![usize::MAX; n];
-        let v2d = vec![V::max(); n];
+        let v2d = vec![W::max(); n];
         return DijkstraHeap{h2v,v2h,v2d};
     }
 
@@ -72,6 +72,16 @@ impl<W: IntOrFloat> DijkstraHeap<W> {
                 }
             }
         }
+        if 2*hp+1 < n {
+            let hl = 2*hp+1;
+            let vl = self.h2v[hl];
+            let dl = self.v2d[vl];
+            if dl < dp {
+                self.h2v[hp] = vl;
+                self.v2h[vl] = hp;
+                hp = hl;
+            }
+        }
         self.h2v[hp] = vp;
         self.v2h[vp] = hp;
     }
@@ -88,12 +98,12 @@ impl<W: IntOrFloat> DijkstraHeap<W> {
     }
 
     pub fn update(&mut self, v: usize, d: W) {
-        let old_d = self.v2d[v];
         let mut h = self.v2h[v];
         if h == usize::MAX {
             h = self.h2v.len();
             self.h2v.push(v);
         }
+        let old_d = self.v2d[v];
         self.v2d[v] = d;
         if d > old_d {
             self.bubble_down(h,v,d);
